@@ -18,6 +18,8 @@ interface RawData {
   load: number;
   'network_rx': number;
   'network_tx': number;
+  'network_in': number;
+  'network_out': number;
   cpu: number;
   memory_total: number;
   memory_used: number;
@@ -25,6 +27,7 @@ interface RawData {
   'swap_used': number;
   'hdd_total': number;
   'hdd_used': number;
+  region: string;
   custom?: string;
 }
 
@@ -50,10 +53,22 @@ function networkUnit(network: number): string {
   network = network || 0;
   if (network < 1000) {
     return `${network.toFixed(0)}B`;
-  } if (network < 1000 * 1000) {
-    return `${(network / 1000).toFixed(0)}K`;
   }
-  return `${(network / 1000 / 1000).toFixed(0)}M`;
+  return `${(network / 1000).toFixed(0)}M`;
+}
+
+function trafficUnit(traffic: number): string {
+  traffic = traffic || 0;
+  if (traffic < 1024) {
+    return `${traffic.toFixed(0)}B`;
+  } if (traffic < 1024 * 1024) {
+    return `${(traffic / 1024).toFixed(0)}KiB`;
+  } if (traffic < 1024 * 1024 * 1024) {
+    return `${(traffic / 1024 / 1024).toFixed(0)}MiB`;
+  } if (traffic < 1024 * 1024 * 1024 * 1024) {
+    return `${(traffic / 1024 / 1024 / 1024).toFixed(0)}GiB`;
+  }
+  return `${(traffic / 1024 / 1024 / 1024 / 1024).toFixed(0)}TiB`;
 }
 
 function bytesToSize(bytes: number, precision: number = 1, si: number = 0) {
@@ -132,41 +147,47 @@ const ServerRow: React.FC<SergateData> = (props: SergateData) => {
   return (
     <div className="sergate">
       <Row className="sr-head" type="flex" justify="space-around" gutter={8}>
-        <Col xs={3} sm={3} md={1} lg={1}>IPv4</Col>
+        <Col xs={0} sm={0} md={0} lg={1}>IPv4</Col>
         <Col xs={0} sm={0} md={0} lg={1}>IPv6</Col>
-        <Col xs={5} sm={6} md={3} lg={2}>{intl.get('NAME')}</Col>
+        <Col xs={6} sm={6} md={3} lg={2}>{intl.get('NAME')}</Col>
         <Col xs={0} sm={0} md={2} lg={2}>{intl.get('TYPE')}</Col>
-        <Col xs={3} sm={2} md={2} lg={2}>{intl.get('LOC')}</Col>
+        <Col xs={3} sm={3} md={3} lg={1}>{intl.get('LOC')}</Col>
         <Col xs={4} sm={4} md={3} lg={2}>{intl.get('UPTIME')}</Col>
         <Col xs={0} sm={0} md={0} lg={2}>{intl.get('LOAD')}</Col>
-        <Col xs={0} sm={0} md={4} lg={3}>{intl.get('NETWORK')}</Col>
-        <Col xs={3} sm={3} md={3} lg={3}>{intl.get('CPU')}</Col>
-        <Col xs={3} sm={3} md={3} lg={3}>{intl.get('RAM')}</Col>
-        <Col xs={3} sm={3} md={3} lg={3}>{intl.get('HDD')}</Col>
+        <Col xs={4} sm={4} md={4} lg={3}>{intl.get('NETWORK')}</Col>
+        <Col xs={4} sm={4} md={4} lg={3}>{intl.get('TRAFFIC')}</Col>
+        <Col xs={3} sm={3} md={3} lg={1}>{intl.get('CPU')}</Col>
+        <Col xs={0} sm={0} md={0} lg={3}>{intl.get('RAM')}</Col>
+        <Col xs={0} sm={0} md={0} lg={3}>{intl.get('HDD')}</Col>
       </Row>
       {servers && servers.length > 0 ? servers.map((server) => (
         <Row key={server.host} className="sr-body" type="flex" justify="center" gutter={resGutter}>
-          <Col xs={3} sm={3} md={1} lg={1}>{onlineTag(server.online4, 'IPv4')}</Col>
+          <Col xs={0} sm={0} md={0} lg={1}>{onlineTag(server.online4, 'IPv4')}</Col>
           <Col xs={0} sm={0} md={0} lg={1}>{onlineTag(server.online6, 'IPv6')}</Col>
-          <Col xs={5} sm={6} md={3} lg={2}>{server.host || server.name}</Col>
+          <Col xs={6} sm={6} md={3} lg={2}>{server.name || server.host}</Col>
           <Col xs={0} sm={0} md={2} lg={2}>{server.type}</Col>
-          <Col xs={3} sm={2} md={2} lg={2}><Flag loc={server.location} /></Col>
+          <Col xs={3} sm={3} md={3} lg={1}><Flag loc={server.region.toLowerCase()} /></Col>
           <Col xs={4} sm={4} md={3} lg={2}>{transUptime(server.uptime)}</Col>
           <Col xs={0} sm={0} md={0} lg={2}>{server.load}</Col>
-          <Col xs={0} sm={0} md={4} lg={3}>
+          <Col xs={4} sm={4} md={4} lg={3}>
             {networkUnit(server.network_rx)}
             ↓ | ↑
             {networkUnit(server.network_tx)}
           </Col>
-          <Col xs={3} sm={3} md={3} lg={3}>
+          <Col xs={4} sm={4} md={4} lg={3}>
+            {trafficUnit(server.network_in)}
+            ↓ | ↑
+            {trafficUnit(server.network_out)}
+          </Col>
+          <Col xs={3} sm={3} md={3} lg={1}>
             <Progress strokeWidth={12} percent={server.cpu} status="active" />
           </Col>
-          <Col xs={3} sm={3} md={3} lg={3}>
+          <Col xs={0} sm={0} md={0} lg={3}>
             <Tooltip placement="left" title={memTips(server)}>
               <Progress strokeWidth={12} percent={parseFloat(((server.memory_used / server.memory_total) * 100).toFixed(1))} status="active" />
             </Tooltip>
           </Col>
-          <Col xs={3} sm={3} md={3} lg={3}>
+          <Col xs={0} sm={0} md={0} lg={3}>
             <Tooltip placement="left" title={`${bytesToSize(server.hdd_used * 1024)}/${bytesToSize(server.hdd_total * 1024)}`}>
               <Progress strokeWidth={12} percent={parseFloat(((server.hdd_used / server.hdd_total) * 100).toFixed(1))} status="active" />
             </Tooltip>
