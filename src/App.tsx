@@ -15,7 +15,7 @@ const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState(false);
   useEffect(() => {
     const fetchData = () => {
-      fetch("json/stats.json")
+      fetch("json/stats.json?_t="+new Date().getTime())
         .then((res) => res.json())
         .then((data) => {
           setServerData(data);
@@ -24,7 +24,7 @@ const App: React.FC = () => {
         .catch((e) => console.log("错误:", e));
     };
     fetchData();
-    let itv = setInterval(fetchData, 5000);
+    let itv = setInterval(fetchData, 1000);
     return () => {
       clearInterval(itv);
     };

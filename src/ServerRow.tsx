@@ -53,8 +53,10 @@ function networkUnit(network: number): string {
   network = network || 0;
   if (network < 1000) {
     return `${network.toFixed(0)}B`;
+  } if (network < 1000 * 1000) {
+    return `${(network / 1000).toFixed(0)}K`;
   }
-  return `${(network / 1000).toFixed(0)}M`;
+  return `${(network / 1000 / 1000).toFixed(0)}M`;
 }
 
 function trafficUnit(traffic: number): string {
@@ -149,13 +151,13 @@ const ServerRow: React.FC<SergateData> = (props: SergateData) => {
       <Row className="sr-head" type="flex" justify="space-around" gutter={8}>
         <Col xs={0} sm={0} md={0} lg={1}>IPv4</Col>
         <Col xs={0} sm={0} md={0} lg={1}>IPv6</Col>
-        <Col xs={6} sm={6} md={3} lg={2}>{intl.get('NAME')}</Col>
+        <Col xs={4} sm={4} md={3} lg={2}>{intl.get('NAME')}</Col>
         <Col xs={0} sm={0} md={2} lg={2}>{intl.get('TYPE')}</Col>
-        <Col xs={3} sm={3} md={3} lg={1}>{intl.get('LOC')}</Col>
+        <Col xs={2} sm={2} md={3} lg={1}>{intl.get('LOC')}</Col>
         <Col xs={4} sm={4} md={3} lg={2}>{intl.get('UPTIME')}</Col>
         <Col xs={0} sm={0} md={0} lg={2}>{intl.get('LOAD')}</Col>
-        <Col xs={4} sm={4} md={4} lg={3}>{intl.get('NETWORK')}</Col>
-        <Col xs={4} sm={4} md={4} lg={3}>{intl.get('TRAFFIC')}</Col>
+        <Col xs={5} sm={5} md={4} lg={3}>{intl.get('NETWORK')}</Col>
+        <Col xs={6} sm={6} md={4} lg={3}>{intl.get('TRAFFIC')}</Col>
         <Col xs={3} sm={3} md={3} lg={1}>{intl.get('CPU')}</Col>
         <Col xs={0} sm={0} md={0} lg={3}>{intl.get('RAM')}</Col>
         <Col xs={0} sm={0} md={0} lg={3}>{intl.get('HDD')}</Col>
@@ -164,17 +166,17 @@ const ServerRow: React.FC<SergateData> = (props: SergateData) => {
         <Row key={server.host} className="sr-body" type="flex" justify="center" gutter={resGutter}>
           <Col xs={0} sm={0} md={0} lg={1}>{onlineTag(server.online4, 'IPv4')}</Col>
           <Col xs={0} sm={0} md={0} lg={1}>{onlineTag(server.online6, 'IPv6')}</Col>
-          <Col xs={6} sm={6} md={3} lg={2}>{server.name || server.host}</Col>
+          <Col xs={4} sm={4} md={3} lg={2}>{server.name || server.host}</Col>
           <Col xs={0} sm={0} md={2} lg={2}>{server.type}</Col>
-          <Col xs={3} sm={3} md={3} lg={1}><Flag loc={server.region.toLowerCase()} /></Col>
+          <Col xs={2} sm={2} md={3} lg={1}><Flag loc={server.region.toLowerCase()} /></Col>
           <Col xs={4} sm={4} md={3} lg={2}>{transUptime(server.uptime)}</Col>
           <Col xs={0} sm={0} md={0} lg={2}>{server.load}</Col>
-          <Col xs={4} sm={4} md={4} lg={3}>
+          <Col xs={5} sm={5} md={4} lg={3}>
             {networkUnit(server.network_rx)}
             ↓ | ↑
             {networkUnit(server.network_tx)}
           </Col>
-          <Col xs={4} sm={4} md={4} lg={3}>
+          <Col xs={6} sm={6} md={4} lg={3}>
             {trafficUnit(server.network_in)}
             ↓ | ↑
             {trafficUnit(server.network_out)}
